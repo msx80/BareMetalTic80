@@ -14,7 +14,6 @@ LIBS := $(TIC80LIB)/libtic80core.a \
 	$(TIC80LIB)/libgiflib.a \
 	$(TIC80LIB)/liblpeg.a \
  	$(TIC80LIB)/liblua.a \
-	$(TIC80LIB)/libsquirrel.a \
 	$(TIC80LIB)/libwren.a \
 	"$(NEWLIBDIR)/lib/libc.a" "$(NEWLIBDIR)/lib/libcirclenewlib.a" \
  	$(CIRCLEHOME)/addon/SDCard/libsdcard.a \
