@@ -7,9 +7,20 @@ This is a preview proof of concept, only basic input is implemented (z, x and cu
 
 It runs any "cart.tic" on SD card.
 
+### TODO
+
+* Fix input (mouse and keyboard)
+* Run full TIC-80 studio (the editor etc)
+* Implement audio
+
 ## Try it
 
 An already built version is available [here](https://drive.google.com/file/d/1kck1odAhhJPL2Zs7zP8cYOfv2Ap05nV4/view?usp=sharing). Just unpack on the root of an appropriate SD card (fat32) and put it on a Raspberry PI 2 with a keyboard connected.
+
+## Want to help?
+
+* If you tryed the program, let me know if and how it worked! Either here, on twitter @msx80 or on TIC-80 discord.
+* Are you good with cmake and building script? Review the mess i put together!
 
 ## How to build
 
