@@ -1,0 +1,6 @@
+[submodule "circle-stdlib"]
+	path = circle-stdlib
+	url = https://github.com/smuehlst/circle-stdlib.git
+[submodule "TIC-80"]
+	path = TIC-80
+	url = https://github.com/nesbox/TIC-80.git
