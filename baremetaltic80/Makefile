@@ -9,7 +9,7 @@ OBJS	= main.o kernel.o customchargenerator.o customscreen.o
 
 include $(CIRCLEHOME)/Rules.mk
 
-CFLAGS += -I "$(NEWLIBDIR)/include" -I $(STDDEF_INCPATH) -I ../../include -I ../TIC-80/include
+CFLAGS += -I "$(NEWLIBDIR)/include" -I $(STDDEF_INCPATH) -I ../circle-stdlib/include -I ../TIC-80/include
 LIBS := $(TIC80LIB)/libtic80core.a \
 	$(TIC80LIB)/libgiflib.a \
 	$(TIC80LIB)/liblpeg.a \
