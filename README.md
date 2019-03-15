@@ -3,12 +3,10 @@ Port of TIC80 to bare metal Raspberry Pi
 
 ## How to build
 
+The build works on a regular x86 linux. Following these steps should work. Feedback welcome :)
 
-* The build works on a regular x86 linux.
-* Download [gcc arm toolkit](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads) and expand on your disk and add it to your path:
-
+* Download [gcc arm toolkit](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads) (i used version gcc-arm-none-eabi-8-2018-q4-major) and expand on your disk and add it to your path:
 * `PATH=/home/xxxx/gcc-arm-none-eabi-8-2018-q4-major/bin/:$PATH`
-
 * clone the repository and modules
 * `git clone --recursive https://github.com/msx80/BareMetalTic80.git`
 * `cd BareMetalTic80`
