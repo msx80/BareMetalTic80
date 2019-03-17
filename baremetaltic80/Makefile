@@ -5,7 +5,7 @@
 CIRCLEHOME = ../circle-stdlib/libs/circle
 NEWLIBDIR = ../circle-stdlib/install/arm-none-circle
 TIC80LIB = ../TIC-80/lib
-OBJS	= main.o kernel.o customchargenerator.o customscreen.o
+OBJS	= main.o kernel.o customchargenerator.o customscreen.o utils.o
 
 include $(CIRCLEHOME)/Rules.mk
 
