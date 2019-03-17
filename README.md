@@ -40,7 +40,7 @@ The build works on a regular x86 linux. Following these steps should work. Feedb
 * `cp tic80editedCMakeLists.txt TIC-80/CMakeLists.txt`
 * `cd TIC-80`
 * Build TIC-80 core:
-* `cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=../arm-gcc-toolchain.cmake .`
+* `cmake -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_TOOLCHAIN_FILE=../arm-gcc-toolchain.cmake .`
 * `make tic80core`
 * `cd ..`
 * Now on to build the "kernel":
