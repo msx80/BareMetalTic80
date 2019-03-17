@@ -24,8 +24,7 @@ else()
     set(CMAKE_EXE_LINKER_FLAGS_INIT "-Wl,-E")
 endif()
 
-#set(CMAKE_C_FLAGS "-nostdlib -nodefaultlibs -std=c99 -DLUA_32BITS --specs=nosys.specs -mabi=aapcs -marm -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4 -mtune=cortex-a7 -D__DYNAMIC_REENT__ -O0")
-set(CMAKE_C_FLAGS "-std=c99 -DLUA_32BITS -DLUA_USE_ULTIBO --specs=nosys.specs -O2 -mabi=aapcs -marm -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4 -mtune=cortex-a7 -D__DYNAMIC_REENT__")
+set(CMAKE_C_FLAGS " -DLUA_32BITS -std=c99 -march=armv7-a+neon-vfpv4  -D AARCH=32 -D __circle__ -D BAREMETAL  --specs=nosys.specs -O3 -mabi=aapcs -marm  -mfloat-abi=hard -mfpu=neon-vfpv4  -D__DYNAMIC_REENT__")
 
 set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}gcc)
 set(CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER})
