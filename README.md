@@ -24,6 +24,8 @@ An already built version is available [here](https://drive.google.com/file/d/1kc
 
 ## How to build
 
+The build is rapidly evolving, feel free to ask if it doesn't work
+
 The build works on a regular x86 linux. Following these steps should work. Feedback welcome :)
 
 * Download [gcc arm toolkit](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads) (i used version gcc-arm-none-eabi-8-2018-q4-major) and expand on your disk and add it to your path:
