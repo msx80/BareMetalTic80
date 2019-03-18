@@ -13,9 +13,12 @@ It runs any "cart.tic" on SD card.
 * Run full TIC-80 studio (the editor etc)
 * Implement audio
 
-## Try it
+## Download
 
-An already built version is available [here](https://drive.google.com/file/d/1kck1odAhhJPL2Zs7zP8cYOfv2Ap05nV4/view?usp=sharing). Just unpack on the root of an appropriate SD card (fat32) and put it on a Raspberry PI 2 with a keyboard connected.
+An already built version is available [here](https://drive.google.com/file/d/1kck1odAhhJPL2Zs7zP8cYOfv2Ap05nV4/view?usp=sharing).
+
+Just unpack on the root of an appropriate SD card (fat32) and put it on a Raspberry PI 2 with a keyboard connected.
+This is just the player, it can run any cart.tic but doesn't have the full editor. I'm still working on it.
 
 ## Want to help?
 
