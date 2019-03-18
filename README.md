@@ -44,7 +44,7 @@ The build works on a regular x86 linux. Following these steps should work. Feedb
 * `make tic80core`
 * `cd ..`
 * Now on to build the "kernel":
-* `cd baremetaltic80`
+* `cd baremetaltic80player`
 * `make`
 
 You'll now have kernel7.img
