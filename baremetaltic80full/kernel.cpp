@@ -31,6 +31,7 @@
 #include <limits.h>
 #include <studio.h>
 #include "keycodes.h"
+#include "gamepads.h"
 
 extern "C" {
 static struct
@@ -159,7 +160,15 @@ static System systemInterface =
 	.updateConfig = updateConfig,
 };
 
-
+u32 rgbaToBgra(u32 u){
+	u8 r = u & 0xFF;
+	u8 g = (u >> 8) & 0xff;
+	u8 b = (u >> 16) & 0xff;
+	return (b & 0xFF)      
+					| ((g & 0xFF) << 8)
+					| ((r & 0xFF)   << 16)
+					| (0xFF << 24);
+}
 
 void screenCopy(CScreenDevice* screen, u32* ts)
 {
@@ -168,8 +177,8 @@ void screenCopy(CScreenDevice* screen, u32* ts)
  for (int y = 0; y<136;y++)
  for (int x = 0; x<240;x++)
   {
-	u32 p = ts[(y+8)*(8+240+8)+(x+8)];
-	buf[pitch*y + x] = p;
+	u32 p = ts[(y+4)*(8+240+8)+(x+8)];
+	buf[pitch*y + x] = rgbaToBgra(p);
   }
 //	memcpy(screen->GetBuffer(), tic->screen, 240*136*4);
 }
@@ -184,8 +193,11 @@ CKernel::CKernel (void)
 {
 }
 
+void gamePadStatusHandler (unsigned nDeviceIndex, const TGamePadState *pGamePadState)
+{
+}
 
-void CKernel::KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys[6])
+void KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys[6])
 {
 
 	tic_mem* tic = platform.studio->tic;
@@ -194,10 +206,15 @@ void CKernel::KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned cha
 
 	tic_input->gamepads.first.data = 0;
 	tic_input->keyboard.data = 0;
-	
+
 	u32 keynum = 0;
 
-//	printf("MODIF %02x ", ucModifiers);
+	//dbg("MODIF %02x ", ucModifiers);
+
+	if(ucModifiers & 0x11) tic_input->keyboard.keys[keynum++]= tic_key_ctrl;
+	if(ucModifiers & 0x22) tic_input->keyboard.keys[keynum++]= tic_key_shift;
+	if(ucModifiers & 0x44) tic_input->keyboard.keys[keynum++]= tic_key_alt;
+
 	for (unsigned i = 0; i < 6; i++)
 	{
 		if (RawKeys[i] != 0)
@@ -224,22 +241,45 @@ void CKernel::KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned cha
 				case 0x29: if (keynum<TIC80_KEY_BUFFER) tic_input->keyboard.keys[keynum++]= tic_key_escape;
 */
 			}
-//			printf(" %02x ", RawKeys[i]);
+	//		dbg(" %02x ", RawKeys[i]);
 
 		}
 	}
-//	printf("\n");
+//	dbg("\n");
 
 
 }
 CStdlibApp::TShutdownMode CKernel::Die(const char *msg)
 {
-	printf("FATAL\n");
-	printf(msg);
+	dbg("FATAL\n");
+	dbg(msg);
 	CTimer::SimpleMsDelay(100000);
 	return ShutdownHalt;
 }
 
+void testmkdir(const char* name)
+{
+	dbg("creating %s : ", name);
+	FRESULT res = f_mkdir(name);
+	if(res == FR_OK)
+	{
+		dbg("ok\n");
+	}
+	else
+	{
+		dbg("KO %d\n", res);
+	}
+}
+
+void teststat(const char* name)
+{
+	dbg("K:%s", name);
+	FILINFO filinfo;
+	FRESULT res = f_stat (name, &filinfo);
+	dbg("stat: %d ", res);
+	dbg("size: %ld ", filinfo.fsize);
+	dbg("attr: %02x\n", filinfo.fattrib);
+}
 
 CStdlibApp::TShutdownMode CKernel::Run (void)
 {
@@ -251,6 +291,20 @@ CStdlibApp::TShutdownMode CKernel::Run (void)
 		Die("Cannot mount drive");
 	}
 
+	//teststat("circle.txt");
+	//teststat("no.txt");
+	//teststat("carts");
+
+	//testmkdir("/slash");
+	//CTimer::SimpleMsDelay(5000);
+
+	// ok testmkdir("primo");
+	// ko testmkdir("secondo/bis");
+	// ok testmkdir(".terzo");
+	// ko testmkdir(".quarto/");
+	// ko testmkdir("quinto/");
+	// ok testmkdir("sesto bis");
+
 	CUSBKeyboardDevice *pKeyboard = (CUSBKeyboardDevice *) mDeviceNameService.GetDevice ("ukbd1", FALSE);
 	if (pKeyboard == 0)
 	{
@@ -259,26 +313,30 @@ CStdlibApp::TShutdownMode CKernel::Run (void)
 
 
 	CScreenDevice* screen = &mScreen;
-	printf("Screen is:\n");
-	printf("%d x %d pitch: %d\n", screen->GetWidth(), screen->GetHeight(), screen->GetPitch());
+	dbg("Screen is:\n");
+	dbg("%d x %d pitch: %d\n", screen->GetWidth(), screen->GetHeight(), screen->GetPitch());
 
-	printf("Creating tic80 instance..\n");
+	dbg("Creating tic80 instance..\n");
 
 
-	platform.studio = studioInit(0, NULL, 44100, "", &systemInterface);
+	platform.studio = studioInit(0, NULL, 44100, "/", &systemInterface);
 	//tic80* tic = tic80_create(44100);
 	if( !platform.studio)
 	{
 		return Die("Could not init studio");
 	}
 
-	// CTimer::SimpleMsDelay(5000);
 
 	pKeyboard->RegisterKeyStatusHandlerRaw (KeyStatusHandlerRaw);
+	initGamepads(mDeviceNameService, gamePadStatusHandler);
 
-	CTimer::SimpleMsDelay(5000000);
+	// CTimer::SimpleMsDelay(50000);
 
-	
+	// CTimer::SimpleMsDelay(5000000);
+
+	tic_mem* tic = platform.studio->tic;
+	tic80_input* tic_input = &tic->ram.input;
+
 	while(true)
 	{
 		platform.studio->tick();

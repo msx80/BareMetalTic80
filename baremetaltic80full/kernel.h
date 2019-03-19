@@ -27,7 +27,7 @@ class CKernel : public CStdlibAppStdio
 public:
 	CKernel (void);
 	static void KeyPressedHandler (const char *pString);
-	static void KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys[6]);
+//	static void KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys[6]);
 	TShutdownMode Die(const char *msg);
 	TShutdownMode Run (void);
 };
