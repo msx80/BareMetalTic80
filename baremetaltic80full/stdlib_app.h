@@ -23,7 +23,8 @@
 #include <circle/logger.h>
 #include <circle/usb/dwhcidevice.h>
 #include <SDCard/emmc.h>
-#include <circle/fs/fat/fatfs.h>
+#include <fatfs/ff.h>
+// include <circle/fs/fat/fatfs.h>
 #include <circle/input/console.h>
 #include <circle/sched/scheduler.h>
 #include <circle/net/netsubsystem.h>
@@ -188,13 +189,13 @@ public:
                         return false;
                 }
 
-                if (!mFileSystem.Mount (pPartition))
+                /*if (!mFileSystem.Mount (pPartition))
                 {
                         mLogger.Write (GetKernelName (), LogError,
                                          "Cannot mount partition: %s", mpPartitionName);
 
                         return false;
-                }
+                }*/
 
                 if (!mDWHCI.Initialize ())
                 {
@@ -207,7 +208,7 @@ public:
                 }
 
                 // Initialize newlib stdio with a reference to Circle's file system and console
-                CGlueStdioInit (mFileSystem, mConsole);
+                CGlueStdioInit (mConsole);
 
                 mLogger.Write (GetKernelName (), LogNotice, "Compile time: " __DATE__ " " __TIME__);
 
@@ -216,7 +217,7 @@ public:
 
         virtual void Cleanup (void)
         {
-                mFileSystem.UnMount ();
+                //mFileSystem.UnMount ();
 
                 CStdlibAppScreen::Cleanup ();
         }
@@ -224,8 +225,9 @@ public:
 protected:
         CDWHCIDevice    mDWHCI;
         CEMMCDevice     mEMMC;
-        CFATFileSystem  mFileSystem;
+        //CFATFileSystem  mFileSystem;
         CConsole        mConsole;
+	FATFS		m_FileSystem;
 };
 
 #endif

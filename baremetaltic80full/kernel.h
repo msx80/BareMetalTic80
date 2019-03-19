@@ -19,6 +19,8 @@
 
 
 #include "stdlib_app.h"
+#include <SDCard/emmc.h>
+#include <fatfs/ff.h>
 
 class CKernel : public CStdlibAppStdio
 {

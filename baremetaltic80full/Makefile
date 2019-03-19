@@ -35,7 +35,8 @@ OBJS	= \
 include $(CIRCLEHOME)/Rules.mk
 
 CFLAGS += -I "$(NEWLIBDIR)/include" -I $(STDDEF_INCPATH) -I ../circle-stdlib/include -I ../TIC-80/include -I ../TIC-80/src \
-	  -I ${TIC803RD}/giflib-5.1.4/lib -I ${TIC803RD}/zlib-1.2.11 -I ${TIC803RD}/lua-5.3.1/src
+	  -I ${TIC803RD}/giflib-5.1.4/lib -I ${TIC803RD}/zlib-1.2.11 -I ${TIC803RD}/lua-5.3.1/src \
+	  -D BAREMETAL
 
 
 LIBS :=  \
@@ -47,6 +48,7 @@ LIBS :=  \
 	$(TIC80LIB)/libzlib.a \
 	"$(NEWLIBDIR)/lib/libc.a" "$(NEWLIBDIR)/lib/libcirclenewlib.a" \
  	$(CIRCLEHOME)/addon/SDCard/libsdcard.a \
+ 	$(CIRCLEHOME)/addon/fatfs/libfatfs.a \
   	$(CIRCLEHOME)/lib/usb/libusb.a \
  	$(CIRCLEHOME)/lib/input/libinput.a \
  	$(CIRCLEHOME)/lib/fs/fat/libfatfs.a \

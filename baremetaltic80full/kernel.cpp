@@ -30,6 +30,7 @@
 #include "utils.h"
 #include <limits.h>
 #include <studio.h>
+#include "keycodes.h"
 
 extern "C" {
 static struct
@@ -52,6 +53,111 @@ static struct
 	char* clipboard;
 
 } platform;
+
+static void setClipboardText(const char* text)
+{
+	if(platform.clipboard)
+	{
+		free(platform.clipboard);
+		platform.clipboard = NULL;
+	}
+
+	platform.clipboard = strdup(text);
+}
+
+static bool hasClipboardText()
+{
+	return platform.clipboard != NULL;
+}
+
+static char* getClipboardText()
+{
+	return platform.clipboard ? strdup(platform.clipboard) : NULL;
+}
+
+static void freeClipboardText(const char* text)
+{
+	free((void*)text);
+}
+
+static u64 getPerformanceCounter()
+{
+	return 0;
+}
+
+static u64 getPerformanceFrequency()
+{
+	return 1000;
+}
+
+static void* getUrlRequest(const char* url, s32* size)
+{
+	return NULL;
+}
+
+static void agoFullscreen()
+{
+}
+
+static void showMessageBox(const char* title, const char* message)
+{
+}
+
+static void setWindowTitle(const char* title)
+{
+}
+
+static void openSystemPath(const char* path)
+{
+
+}
+
+static void preseed()
+{
+#if defined(__TIC_MACOSX__)
+	srandom(time(NULL));
+	random();
+#else
+	srand(time(NULL));
+	rand();
+#endif
+}
+
+static void pollEvent()
+{
+
+}
+
+static void updateConfig()
+{
+
+}
+
+
+static System systemInterface = 
+{
+	.setClipboardText = setClipboardText,
+	.hasClipboardText = hasClipboardText,
+	.getClipboardText = getClipboardText,
+	.freeClipboardText = freeClipboardText,
+
+	.getPerformanceCounter = getPerformanceCounter,
+	.getPerformanceFrequency = getPerformanceFrequency,
+
+	.getUrlRequest = getUrlRequest,
+
+	.fileDialogLoad = NULL, //file_dialog_load,
+	.fileDialogSave = NULL, //file_dialog_save,
+
+	.goFullscreen = agoFullscreen,
+	.showMessageBox = showMessageBox,
+	.setWindowTitle = setWindowTitle,
+
+	.openSystemPath = openSystemPath,
+	.preseed = preseed,
+	.poll = pollEvent,
+	.updateConfig = updateConfig,
+};
 
 
 
@@ -87,12 +193,21 @@ void CKernel::KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned cha
 	tic80_input* tic_input = &tic->ram.input;
 
 	tic_input->gamepads.first.data = 0;
+	tic_input->keyboard.data = 0;
+	
+	u32 keynum = 0;
 
 //	printf("MODIF %02x ", ucModifiers);
 	for (unsigned i = 0; i < 6; i++)
 	{
 		if (RawKeys[i] != 0)
 		{
+			// keyboard
+			if(keynum<TIC80_KEY_BUFFER){
+				tic_keycode tkc = TicKeyboardCodes[RawKeys[i]];
+				if(tkc != tic_key_unknown) tic_input->keyboard.keys[keynum++]= tkc;
+			}
+			// key to gamepad
 			switch(RawKeys[i])
 			{
 				case 0x1d: tic_input->gamepads.first.a = true; break;
@@ -101,10 +216,20 @@ void CKernel::KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned cha
 				case 0x51: tic_input->gamepads.first.down = true; break;
 				case 0x50: tic_input->gamepads.first.left = true; break;
 				case 0x4F: tic_input->gamepads.first.right = true; break;
+	/*
+				case 0x3a: if (keynum<TIC80_KEY_BUFFER) tic_input->keyboard.keys[keynum++]= tic_key_f1;
+				case 0x3b: if (keynum<TIC80_KEY_BUFFER) tic_input->keyboard.keys[keynum++]= tic_key_f2;
+				case 0x3c: if (keynum<TIC80_KEY_BUFFER) tic_input->keyboard.keys[keynum++]= tic_key_f3;
+				case 0x3d: if (keynum<TIC80_KEY_BUFFER) tic_input->keyboard.keys[keynum++]= tic_key_f4;
+				case 0x29: if (keynum<TIC80_KEY_BUFFER) tic_input->keyboard.keys[keynum++]= tic_key_escape;
+*/
 			}
+//			printf(" %02x ", RawKeys[i]);
 
 		}
 	}
+//	printf("\n");
+
 
 }
 CStdlibApp::TShutdownMode CKernel::Die(const char *msg)
@@ -120,6 +245,11 @@ CStdlibApp::TShutdownMode CKernel::Run (void)
 {
 	mLogger.Write (GetKernelName (), LogNotice, "TIC80 Port");
 
+	// Mount file system
+	if (f_mount (&m_FileSystem, "SD:", 1) != FR_OK)
+	{
+		Die("Cannot mount drive");
+	}
 
 	CUSBKeyboardDevice *pKeyboard = (CUSBKeyboardDevice *) mDeviceNameService.GetDevice ("ukbd1", FALSE);
 	if (pKeyboard == 0)
@@ -134,7 +264,8 @@ CStdlibApp::TShutdownMode CKernel::Run (void)
 
 	printf("Creating tic80 instance..\n");
 
-	platform.studio = studioInit(0, NULL, 44100, "./", NULL);
+
+	platform.studio = studioInit(0, NULL, 44100, "", &systemInterface);
 	//tic80* tic = tic80_create(44100);
 	if( !platform.studio)
 	{
@@ -145,7 +276,9 @@ CStdlibApp::TShutdownMode CKernel::Run (void)
 
 	pKeyboard->RegisterKeyStatusHandlerRaw (KeyStatusHandlerRaw);
 
+	CTimer::SimpleMsDelay(5000000);
 
+	
 	while(true)
 	{
 		platform.studio->tick();
