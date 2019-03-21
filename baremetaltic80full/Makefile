@@ -28,6 +28,9 @@ LIBS :=  \
 	$(TIC80LIB)/libzlib.a \
 	"$(NEWLIBDIR)/lib/libc.a" \
         "$(NEWLIBDIR)/lib/libcirclenewlib.a" \
+	$(CIRCLEHOME)/addon/vc4/sound/libvchiqsound.a \
+        $(CIRCLEHOME)/addon/vc4/vchiq/libvchiq.a \
+        $(CIRCLEHOME)/addon/linux/liblinuxemu.a \
  	$(CIRCLEHOME)/addon/SDCard/libsdcard.a \
  	$(CIRCLEHOME)/addon/fatfs/libfatfs.a \
   	$(CIRCLEHOME)/lib/usb/libusb.a \

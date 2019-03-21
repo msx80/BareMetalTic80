@@ -24,6 +24,9 @@
 #include <circle/usb/dwhcidevice.h>
 #include <SDCard/emmc.h>
 #include <fatfs/ff.h>
+#include <vc4/vchiq/vchiqdevice.h>
+#include <vc4/sound/vchiqsounddevice.h>
+
 // include <circle/fs/fat/fatfs.h>
 #include <circle/input/console.h>
 #include <circle/sched/scheduler.h>
@@ -71,6 +74,7 @@ public:
         }
 
 protected:
+	CMemorySystem	   mMemory;
         CActLED            mActLED;
         CKernelOptions     mOptions;
         CDeviceNameService mDeviceNameService;
@@ -163,7 +167,9 @@ public:
                   mpPartitionName (pPartitionName),
                   mDWHCI (&mInterrupt, &mTimer),
                   mEMMC (&mInterrupt, &mTimer, &mActLED),
-                  mConsole (&mScreen)
+                  mConsole (&mScreen),
+		  mVCHIQ (&mMemory, &mInterrupt),
+		  mVCHIQSound (&mVCHIQ, VCHIQSoundDestinationHDMI)
         {
         }
 
@@ -227,7 +233,9 @@ protected:
         CEMMCDevice     mEMMC;
         //CFATFileSystem  mFileSystem;
         CConsole        mConsole;
-	FATFS		m_FileSystem;
+	FATFS		mFileSystem;
+	CVCHIQDevice		mVCHIQ;
+	CVCHIQSoundDevice	mVCHIQSound;
 };
 
 #endif
