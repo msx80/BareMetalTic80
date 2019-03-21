@@ -20,6 +20,8 @@
 
 #include "stdlib_app.h"
 #include <SDCard/emmc.h>
+#include <vc4/vchiq/vchiqdevice.h>
+#include <vc4/sound/vchiqsounddevice.h>
 #include <fatfs/ff.h>
 
 class CKernel : public CStdlibAppStdio

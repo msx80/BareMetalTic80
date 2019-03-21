@@ -27,15 +27,38 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <circle/usb/usbkeyboard.h>
+#include <circle/input/mouse.h>
 #include "utils.h"
 #include <limits.h>
 #include <studio.h>
 #include "keycodes.h"
 #include "gamepads.h"
 
+
+CSpinLock keyspinlock;
+
+
+	static u8 kl[10000];
+	static u32 ki=0;
+	void logchar(u8 c)
+	{
+		if(ki < 10000)
+		{
+		 kl[ki++]=c;
+		}
+	}
+	void diechar()
+	{
+		kl[ki] =0;
+		printf((const char*)kl);
+		CTimer::SimpleMsDelay(60000);
+	}
+
+
 extern "C" {
 static struct
 {
+
 	Studio* studio;
 
 	struct
@@ -83,12 +106,12 @@ static void freeClipboardText(const char* text)
 
 static u64 getPerformanceCounter()
 {
-	return 0;
+	return CTimer::Get()->GetTicks();
 }
 
 static u64 getPerformanceFrequency()
 {
-	return 1000;
+	return HZ;
 }
 
 static void* getUrlRequest(const char* url, s32* size)
@@ -160,6 +183,21 @@ static System systemInterface =
 	.updateConfig = updateConfig,
 };
 
+static void handleKeyboard()
+{
+	tic_mem* tic = platform.studio->tic;
+
+	tic80_input* input = &tic->ram.input;
+	input->keyboard.data = 0;
+
+	enum{BufSize = COUNT_OF(input->keyboard.keys)};
+
+	for(s32 i = 0, c = 0; i < COUNT_OF(platform.keyboard.state) && c < BufSize; i++)
+		if(platform.keyboard.state[i])
+			input->keyboard.keys[c++] = i;
+}
+
+
 u32 rgbaToBgra(u32 u){
 	u8 r = u & 0xFF;
 	u8 g = (u >> 8) & 0xff;
@@ -199,7 +237,8 @@ void gamePadStatusHandler (unsigned nDeviceIndex, const TGamePadState *pGamePadS
 
 void KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys[6])
 {
-
+	keyspinlock.Acquire();
+	logchar('R');
 	tic_mem* tic = platform.studio->tic;
 
 	tic80_input* tic_input = &tic->ram.input;
@@ -241,11 +280,14 @@ void KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys
 				case 0x29: if (keynum<TIC80_KEY_BUFFER) tic_input->keyboard.keys[keynum++]= tic_key_escape;
 */
 			}
+//			if (RawKeys[i] == 0x13) diechar();
 	//		dbg(" %02x ", RawKeys[i]);
 
 		}
 	}
 //	dbg("\n");
+	logchar('r');
+	keyspinlock.Release();
 
 
 }
@@ -286,7 +328,7 @@ CStdlibApp::TShutdownMode CKernel::Run (void)
 	mLogger.Write (GetKernelName (), LogNotice, "TIC80 Port");
 
 	// Mount file system
-	if (f_mount (&m_FileSystem, "SD:", 1) != FR_OK)
+	if (f_mount (&mFileSystem, "SD:", 1) != FR_OK)
 	{
 		Die("Cannot mount drive");
 	}
@@ -309,6 +351,20 @@ CStdlibApp::TShutdownMode CKernel::Run (void)
 	if (pKeyboard == 0)
 	{
 		return Die("Keyboard not found");
+	}
+
+	CMouseDevice *pMouse = (CMouseDevice *) mDeviceNameService.GetDevice ("mouse1", FALSE);
+	if (pMouse == 0)
+	{
+		dbg("Mouse not found");
+	}
+	else
+	{
+		if (!pMouse->Setup (SCREEN_WIDTH, SCREEN_HEIGHT))
+		{
+			Die("Cannot setup mouse");
+		}
+
 	}
 
 
@@ -339,9 +395,13 @@ CStdlibApp::TShutdownMode CKernel::Run (void)
 
 	while(true)
 	{
+		keyspinlock.Acquire();
+		logchar('T');
 		platform.studio->tick();
-		screenCopy(screen, platform.studio->tic->screen);
+		logchar('t');
+		keyspinlock.Release();
 		screen->vsync();
+		screenCopy(screen, platform.studio->tic->screen);
 	}
 
 	return ShutdownHalt;
