@@ -51,6 +51,7 @@ CSpinLock keyspinlock;
 	{
 		kl[ki] =0;
 		printf((const char*)kl);
+		printf("\n");
 		CTimer::SimpleMsDelay(60000);
 	}
 
@@ -183,21 +184,6 @@ static System systemInterface =
 	.updateConfig = updateConfig,
 };
 
-static void handleKeyboard()
-{
-	tic_mem* tic = platform.studio->tic;
-
-	tic80_input* input = &tic->ram.input;
-	input->keyboard.data = 0;
-
-	enum{BufSize = COUNT_OF(input->keyboard.keys)};
-
-	for(s32 i = 0, c = 0; i < COUNT_OF(platform.keyboard.state) && c < BufSize; i++)
-		if(platform.keyboard.state[i])
-			input->keyboard.keys[c++] = i;
-}
-
-
 u32 rgbaToBgra(u32 u){
 	u8 r = u & 0xFF;
 	u8 g = (u >> 8) & 0xff;
@@ -231,8 +217,50 @@ CKernel::CKernel (void)
 {
 }
 
-void gamePadStatusHandler (unsigned nDeviceIndex, const TGamePadState *pGamePadState)
+void gamePadStatusHandler (unsigned nDeviceIndex, const TGamePadState *pState)
 {
+/*
+	keyspinlock.Acquire();
+	tic_mem* tic = platform.studio->tic;
+	tic80_input* tic_input = &tic->ram.input;
+
+	if(pState->buttons & 0x100)
+	{
+		tic_input->gamepads.first.a = true; 
+	}
+
+	keyspinlock.Release();
+
+*/
+
+/*
+        printf("GP%u:BTN 0x%X", nDeviceIndex+1, pState->buttons);
+
+
+        if (pState->naxes > 0)
+        {
+                printf(" A");
+
+                for (int i = 0; i < pState->naxes; i++)
+                {
+                        printf(" %d", pState->axes[i].value);
+                }
+        }
+
+        if (pState->nhats > 0)
+        {
+                printf(" H");
+
+                for (int i = 0; i < pState->nhats; i++)
+                {
+                        printf(" %d", pState->hats[i]);
+                }
+        }
+
+       printf("\n");
+	// CLogger::Get ()->Write ("G", LogWarning, Msg);
+
+*/
 }
 
 void KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys[6])
@@ -295,6 +323,7 @@ CStdlibApp::TShutdownMode CKernel::Die(const char *msg)
 {
 	dbg("FATAL\n");
 	dbg(msg);
+	dbg("\n");
 	CTimer::SimpleMsDelay(100000);
 	return ShutdownHalt;
 }
@@ -372,6 +401,13 @@ CStdlibApp::TShutdownMode CKernel::Run (void)
 	dbg("Screen is:\n");
 	dbg("%d x %d pitch: %d\n", screen->GetWidth(), screen->GetHeight(), screen->GetPitch());
 
+	CLogger::Get()->Write("TEST", LogError, "Test Logging!");
+	dbg("data:\n");
+	dbg("Memory: %p\n", &mMemory);
+	dbg("Snd: %p\n", &mVCHIQSound);
+
+	
+
 	dbg("Creating tic80 instance..\n");
 
 
@@ -388,20 +424,42 @@ CStdlibApp::TShutdownMode CKernel::Run (void)
 
 	// CTimer::SimpleMsDelay(50000);
 
-	// CTimer::SimpleMsDelay(5000000);
-
 	tic_mem* tic = platform.studio->tic;
 	tic80_input* tic_input = &tic->ram.input;
+
+	mVCHIQSound.AllocateQueue(1000);
+
+	mVCHIQSound.SetWriteFormat(SoundFormatSigned16);
+
+
+	/*
+	dbg("Written ok");
+	s16 bb[40000] = {0};
+	mVCHIQSound.Write(&bb, 40000);
+	dbg("Written ok2");
+	*/
+
+	if (!mVCHIQSound.Start())
+	{
+		Die("Could not start sound.");
+	}
+
+//	Die("STARTEEED!");
 
 	while(true)
 	{
 		keyspinlock.Acquire();
-		logchar('T');
 		platform.studio->tick();
-		logchar('t');
 		keyspinlock.Release();
+
+//		s32 count = tic->samples.size / sizeof tic->samples.buffer[0];
+		mVCHIQSound.Write(tic->samples.buffer, tic->samples.size);
+
 		screen->vsync();
+
 		screenCopy(screen, platform.studio->tic->screen);
+
+		mScheduler.Yield();
 	}
 
 	return ShutdownHalt;

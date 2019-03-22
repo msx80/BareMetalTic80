@@ -19,7 +19,10 @@ void initGamepads(CDeviceNameService m_DeviceNameService, TGamePadStatusHandler 
 		}
 
 		const TGamePadState *pState = pGamePad->GetInitialState ();
+
 		assert (pState != 0);
+
+		dbg("Prop %d\n", pGamePad->GetProperties());
 
 		dbg("Gamepad %u: %d Button(s) %d Hat(s)\n", nDevice, pState->nbuttons, pState->nhats);
 

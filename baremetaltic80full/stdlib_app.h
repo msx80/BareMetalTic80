@@ -25,7 +25,7 @@
 #include <SDCard/emmc.h>
 #include <fatfs/ff.h>
 #include <vc4/vchiq/vchiqdevice.h>
-#include <vc4/sound/vchiqsounddevice.h>
+#include <vc4/sound/vchiqsoundbasedevice.h>
 
 // include <circle/fs/fat/fatfs.h>
 #include <circle/input/console.h>
@@ -98,7 +98,7 @@ public:
 //                  mScreen (240, 136),
 		mSerial(&mInterrupt),
                   mTimer (&mInterrupt),
-                  mLogger (mOptions.GetLogLevel (), &mTimer)
+                  mLogger (LogWarning /*mOptions.GetLogLevel ()*/, &mTimer)
 
         {
         }
@@ -129,6 +129,7 @@ public:
                 }
 
                 if (!mLogger.Initialize (&mNullDevice)) //pTarget))
+                // if (!mLogger.Initialize(pTarget))
                 {
                         return false;
                 }
@@ -169,7 +170,9 @@ public:
                   mEMMC (&mInterrupt, &mTimer, &mActLED),
                   mConsole (&mScreen),
 		  mVCHIQ (&mMemory, &mInterrupt),
-		  mVCHIQSound (&mVCHIQ, VCHIQSoundDestinationHDMI)
+		  mVCHIQSound (&mVCHIQ, 44100, 
+			4000, // TODO verify 
+			VCHIQSoundDestinationHDMI)
         {
         }
 
@@ -213,6 +216,12 @@ public:
                         return false;
                 }
 
+       if (!mVCHIQ.Initialize ())
+        {
+                        return false;
+        }
+
+
                 // Initialize newlib stdio with a reference to Circle's file system and console
                 CGlueStdioInit (mConsole);
 
@@ -234,8 +243,9 @@ protected:
         //CFATFileSystem  mFileSystem;
         CConsole        mConsole;
 	FATFS		mFileSystem;
+	CScheduler		mScheduler;
 	CVCHIQDevice		mVCHIQ;
-	CVCHIQSoundDevice	mVCHIQSound;
+	CVCHIQSoundBaseDevice	mVCHIQSound;
 };
 
 #endif
