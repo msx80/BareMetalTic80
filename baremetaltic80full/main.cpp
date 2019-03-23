@@ -16,29 +16,20 @@
 //
 #include "kernel.h"
 #include <circle/startup.h>
-
+#include "utils.h"
 int main (void)
 {
 	// cannot return here because some destructors used in CKernel are not implemented
 
-	CKernel Kernel;
-	if (!Kernel.Initialize ())
-	{
-		halt ();
-		return EXIT_HALT;
-	}
-	
-	CStdlibApp::TShutdownMode ShutdownMode = Kernel.Run ();
+	TShutdownMode s = Run();
 
-	Kernel.Cleanup ();
-
-	switch (ShutdownMode)
+	switch (s)
 	{
-	case CStdlibApp::ShutdownReboot:
+	case ShutdownReboot:
 		reboot ();
 		return EXIT_REBOOT;
 
-	case CStdlibApp::ShutdownHalt:
+	case ShutdownHalt:
 	default:
 		halt ();
 		return EXIT_HALT;

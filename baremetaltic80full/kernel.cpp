@@ -33,7 +33,10 @@
 #include <studio.h>
 #include "keycodes.h"
 #include "gamepads.h"
+#include "syscore.h"
 
+
+static const char* KN = "TIC80"; // kernel name
 
 CSpinLock keyspinlock;
 
@@ -196,6 +199,9 @@ u32 rgbaToBgra(u32 u){
 
 void screenCopy(CScreenDevice* screen, u32* ts)
 {
+	tic_mem* tic = platform.studio->tic;
+	tic80_input* input = &tic->ram.input;
+
  u32 pitch = screen->GetPitch();
  u32* buf = screen->GetBuffer();
  for (int y = 0; y<136;y++)
@@ -204,6 +210,9 @@ void screenCopy(CScreenDevice* screen, u32* ts)
 	u32 p = ts[(y+4)*(8+240+8)+(x+8)];
 	buf[pitch*y + x] = rgbaToBgra(p);
   }
+ u32 midx =  pitch*(input->mouse.y)+input->mouse.x;
+
+ buf[midx]= 0xffffff;
 //	memcpy(screen->GetBuffer(), tic->screen, 240*136*4);
 }
 
@@ -211,10 +220,17 @@ void screenCopy(CScreenDevice* screen, u32* ts)
 
 } //extern C
 
-
-CKernel::CKernel (void)
-:	CStdlibAppStdio ("Tic-80")
+void mouseEventHandler (TMouseEvent Event, unsigned nButtons, unsigned nPosX, unsigned nPosY)
 {
+	keyspinlock.Acquire();
+	//dbg("mouse %x p: %d %d", nButtons, nPosX, nPosY);
+	tic80_input* input = &platform.studio->tic->ram.input;
+	if (nButtons & 0x01) input->mouse.left = true; else input->mouse.left = false;
+	if (nButtons & 0x02) input->mouse.right = true; else input->mouse.right = false;
+	if (nButtons & 0x04) input->mouse.middle = true; else input->mouse.middle = false;
+	input->mouse.x = nPosX/MOUSE_SENS;
+	input->mouse.y = nPosY/MOUSE_SENS;
+	keyspinlock.Release();
 }
 
 void gamePadStatusHandler (unsigned nDeviceIndex, const TGamePadState *pState)
@@ -266,7 +282,6 @@ void gamePadStatusHandler (unsigned nDeviceIndex, const TGamePadState *pState)
 void KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys[6])
 {
 	keyspinlock.Acquire();
-	logchar('R');
 	tic_mem* tic = platform.studio->tic;
 
 	tic80_input* tic_input = &tic->ram.input;
@@ -314,18 +329,9 @@ void KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys
 		}
 	}
 //	dbg("\n");
-	logchar('r');
 	keyspinlock.Release();
 
 
-}
-CStdlibApp::TShutdownMode CKernel::Die(const char *msg)
-{
-	dbg("FATAL\n");
-	dbg(msg);
-	dbg("\n");
-	CTimer::SimpleMsDelay(100000);
-	return ShutdownHalt;
 }
 
 void testmkdir(const char* name)
@@ -352,15 +358,10 @@ void teststat(const char* name)
 	dbg("attr: %02x\n", filinfo.fattrib);
 }
 
-CStdlibApp::TShutdownMode CKernel::Run (void)
+TShutdownMode Run(void)
 {
-	mLogger.Write (GetKernelName (), LogNotice, "TIC80 Port");
-
-	// Mount file system
-	if (f_mount (&mFileSystem, "SD:", 1) != FR_OK)
-	{
-		Die("Cannot mount drive");
-	}
+	initializeCore();
+	mLogger.Write (KN, LogNotice, "TIC80 Port");
 
 	//teststat("circle.txt");
 	//teststat("no.txt");
@@ -376,53 +377,23 @@ CStdlibApp::TShutdownMode CKernel::Run (void)
 	// ko testmkdir("quinto/");
 	// ok testmkdir("sesto bis");
 
-	CUSBKeyboardDevice *pKeyboard = (CUSBKeyboardDevice *) mDeviceNameService.GetDevice ("ukbd1", FALSE);
-	if (pKeyboard == 0)
-	{
-		return Die("Keyboard not found");
-	}
-
-	CMouseDevice *pMouse = (CMouseDevice *) mDeviceNameService.GetDevice ("mouse1", FALSE);
-	if (pMouse == 0)
-	{
-		dbg("Mouse not found");
-	}
-	else
-	{
-		if (!pMouse->Setup (SCREEN_WIDTH, SCREEN_HEIGHT))
-		{
-			Die("Cannot setup mouse");
-		}
-
-	}
-
-
-	CScreenDevice* screen = &mScreen;
-	dbg("Screen is:\n");
-	dbg("%d x %d pitch: %d\n", screen->GetWidth(), screen->GetHeight(), screen->GetPitch());
-
-	CLogger::Get()->Write("TEST", LogError, "Test Logging!");
-	dbg("data:\n");
-	dbg("Memory: %p\n", &mMemory);
-	dbg("Snd: %p\n", &mVCHIQSound);
-
-	
 
 	dbg("Creating tic80 instance..\n");
 
 
-	platform.studio = studioInit(0, NULL, 44100, "/", &systemInterface);
+	platform.studio = studioInit(0, NULL, 44100, "tic80/", &systemInterface);
 	//tic80* tic = tic80_create(44100);
 	if( !platform.studio)
 	{
-		return Die("Could not init studio");
+		Die("Could not init studio");
 	}
 
 
 	pKeyboard->RegisterKeyStatusHandlerRaw (KeyStatusHandlerRaw);
-	initGamepads(mDeviceNameService, gamePadStatusHandler);
+	//initGamepads(mDeviceNameService, gamePadStatusHandler);
 
-	// CTimer::SimpleMsDelay(50000);
+	pMouse->RegisterEventHandler (mouseEventHandler);
+	//CTimer::SimpleMsDelay(50000);
 
 	tic_mem* tic = platform.studio->tic;
 	tic80_input* tic_input = &tic->ram.input;
@@ -432,34 +403,32 @@ CStdlibApp::TShutdownMode CKernel::Run (void)
 	mVCHIQSound.SetWriteFormat(SoundFormatSigned16);
 
 
-	/*
+/*	
 	dbg("Written ok");
 	s16 bb[40000] = {0};
 	mVCHIQSound.Write(&bb, 40000);
 	dbg("Written ok2");
-	*/
+*/	
 
 	if (!mVCHIQSound.Start())
 	{
 		Die("Could not start sound.");
 	}
 
-//	Die("STARTEEED!");
-
+	// LOOP
 	while(true)
 	{
 		keyspinlock.Acquire();
 		platform.studio->tick();
 		keyspinlock.Release();
 
-//		s32 count = tic->samples.size / sizeof tic->samples.buffer[0];
 		mVCHIQSound.Write(tic->samples.buffer, tic->samples.size);
 
-		screen->vsync();
+		mScreen.vsync();
 
-		screenCopy(screen, platform.studio->tic->screen);
+		screenCopy(&mScreen, platform.studio->tic->screen);
 
-		mScheduler.Yield();
+		mScheduler.Yield(); // for sound
 	}
 
 	return ShutdownHalt;

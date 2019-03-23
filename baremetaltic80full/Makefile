@@ -19,7 +19,7 @@ CFLAGS += -I "$(NEWLIBDIR)/include" -I $(STDDEF_INCPATH) -I ../circle-stdlib/inc
 
 
 LIBS :=  \
-	$(TIC80LIB)/libtic80prolib.a \
+	$(TIC80LIB)/libtic80lib.a \
 	$(TIC80LIB)/libtic80core.a \
 	$(TIC80LIB)/libgiflib.a \
 	$(TIC80LIB)/liblpeg.a \

@@ -1,4 +1,4 @@
 #!/bin/sh
-objcopy kernel.elf -O ihex kernel.hex
-python flasher.py kernel.hex /dev/ttyUSB0 921600
+objcopy kernel7.elf -O ihex kernel7.hex
+python flasher.py kernel7.hex /dev/ttyUSB0 921600
 

@@ -1,12 +1,4 @@
-#include "kernel.h"
-#include <stdio.h>
-#include <cstring>
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
-#include <cstring>
-#include <cerrno>
-#include <unistd.h>
+#include "utils.h"
 
 
 #define MAXBUFLEN (1024*1024)
@@ -22,15 +14,15 @@ char *strdup (const char *s) {
 
 void* loadFile(const char *filename, u32* size)
 {
+/*
   // slow way to load a file since we don't have fseek
-  char source[MAXBUFLEN];
+/  char source[MAXBUFLEN];
   FILE *fp = fopen(filename, "rb");
   if (fp != NULL) {
     size_t newLen = fread(source, sizeof(char), MAXBUFLEN, fp);
     if ( ferror( fp ) != 0 ) {
         fputs("Error reading file", stderr);
     } else {
-       // source[newLen++] = '\0'; /* Just to be safe. */
     }
 
     fclose(fp);
@@ -44,5 +36,7 @@ void* loadFile(const char *filename, u32* size)
   {
     return NULL;
   }
+*/
+return NULL;
 }
 

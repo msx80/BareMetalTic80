@@ -16,7 +16,8 @@ try:
         #stopbits=serial.STOPBITS_ONE,
         #bytesize=serial.EIGHTBITS
     )
-except Exception:
+except Exception as e:
+    print(str(e));
     print("ERROR: Serial Port " + flashport + " busy or inexistent!")
     exit()
     
