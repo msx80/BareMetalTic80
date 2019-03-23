@@ -3,22 +3,22 @@ Port of TIC80 to bare metal Raspberry Pi
 
 This is a port of fantasy console [TIC-80](https://github.com/nesbox/TIC-80) to Raspberry-PI 2 in baremetal, that is, without operating system. It boots almost instantly. It is built on top of [circle](https://github.com/rsta2/circle) and [circle-stdlib](https://github.com/smuehlst/circle-stdlib).
 
-This is a preview proof of concept, only basic input is implemented (z, x and cursors), no audio, probably broken colors, etc. But shows it can be done!
+This is an alpha release, things are pretty usable but there are limitations.
 
-It runs any "cart.tic" on SD card.
+Store your carts in the "tic80" folder and boot up and voilà, you have the editor and everything :)
 
 ### TODO
 
-* Fix input (mouse and keyboard)
-* Run full TIC-80 studio (the editor etc)
-* Implement audio
+* Fix input (keyboard glitches, gamepads)
+* Fix file access code
+* Use multicore mode for better performances
 
 ## Download
 
-An already built version is available [here](https://drive.google.com/file/d/1kck1odAhhJPL2Zs7zP8cYOfv2Ap05nV4/view?usp=sharing).
+An already built version is available in [Releases](https://github.com/msx80/BareMetalTic80/releases).
 
-Just unpack on the root of an appropriate SD card (fat32) and put it on a Raspberry PI 2 with a keyboard connected.
-This is just the player, it can run any cart.tic but doesn't have the full editor. I'm still working on it.
+Just unpack on the root of an appropriate SD card (fat32) and put it on a Raspberry PI 2 with a keyboard (optionally a mouse) connected.
+This is the full TIC-80 release with the editor.
 
 ## Want to help?
 
