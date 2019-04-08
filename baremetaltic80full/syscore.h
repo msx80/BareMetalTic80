@@ -44,7 +44,7 @@ static        CConsole        mConsole(&mScreen);
 static	FATFS		mFileSystem;
 static	CScheduler		mScheduler;
 static	CVCHIQDevice		mVCHIQ(&mMemory, &mInterrupt);
-static	CVCHIQSoundBaseDevice	mVCHIQSound(&mVCHIQ, 44100, 4000 /* TODO verify */, VCHIQSoundDestinationHDMI);
+static	CVCHIQSoundBaseDevice	mVCHIQSound(&mVCHIQ, 44100, 4000 /* TODO verify */,  (TVCHIQSoundDestination) mOptions.GetSoundOption ()); //VCHIQSoundDestinationHDMI);
 
 static CUSBKeyboardDevice *pKeyboard = NULL;
 static CMouseDevice *pMouse= NULL;
