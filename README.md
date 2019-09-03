@@ -1,4 +1,11 @@
 # BareMetalTic80
+
+IMPORTANT: This port has been integrated into official TIC-80! Please check [there](https://github.com/msx80/TIC-80/blob/baremetal/build/baremetalpi/README.md)!
+
+This repository will not be updated.
+
+## About
+
 Port of TIC80 to bare metal Raspberry Pi
 
 This is a port of fantasy console [TIC-80](https://github.com/nesbox/TIC-80) to Raspberry-PI 2 in baremetal, that is, without operating system. It boots almost instantly. It is built on top of [circle](https://github.com/rsta2/circle) and [circle-stdlib](https://github.com/smuehlst/circle-stdlib).
